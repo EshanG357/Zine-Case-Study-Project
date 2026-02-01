@@ -83,5 +83,110 @@ In VIO:
 - The fusion algorithm (e.g., EKF) combines both to produce a
   consistent motion estimate.
 
-This method enables the drone to estimate its state in real time without
-GPS, making it suitable for navigation in indoor and GPS-denied spaces.
+This method enables the drone to estimate its state in real time without GPS, making it suitable for navigation in indoor and GPS-denied spaces.
+
+## State Estimation Pipeline
+
+The state estimation pipeline defines the sequence of operations used to estimate the drone’s position, velocity, and orientation using onboard
+sensor data. In GPS-denied environments, this pipeline operates continuously to compensate for sensor noise and drift.
+
+### Sensor Data Acquisition
+The pipeline begins with data acquisition from onboard sensors. 
+IMU measurements provide high-frequency acceleration and angular velocity data, while vision sensors and LiDAR provide environmental observations
+such as visual features and depth information.
+
+### Prediction Step
+In the prediction step, IMU data is integrated using a motion model to predict the drone’s state at the next time step. Although this prediction
+is fast and responsive, it accumulates error over time due to sensor noise and bias.
+
+### Measurement Update
+Vision or LiDAR measurements are used to correct the predicted state. 
+These measurements provide relative motion or distance information that helps reduce accumulated drift.
+
+### Sensor Fusion
+An Extended Kalman Filter (EKF) fuses the predicted state with sensor measurements to produce an optimal state estimate. This fusion process
+balances the fast response of inertial sensing with the accuracy of external observations.
+
+### Output State
+The final estimated state—including position, velocity, and orientation—is passed to the navigation and control module for path
+planning and stable flight control.
+
+## Sensor Limitations, Noise, and Drift Accumulation
+
+All onboard sensors used in GPS-denied navigation are affected by noise, bias, and environmental limitations. Understanding these limitations is
+critical for designing a reliable state estimation system.
+
+### IMU Limitations and Drift
+Inertial Measurement Units (IMUs) provide high-frequency acceleration and angular velocity measurements. 
+However, IMU sensors are affected by noise and bias, which accumulate over time when integrated. 
+Since position estimation requires double integration of acceleration, even small measurement errors can result 
+in significant drift in position and orientation estimates.
+
+### Vision Sensor Limitations
+Vision sensors are commonly used to correct inertial drift by tracking visual features in the environment. However, their performance depends
+on environmental conditions such as lighting, texture availability, and camera motion. Poor lighting, motion blur, or featureless surfaces can
+temporarily degrade visual measurements.
+
+### LiDAR Limitations
+LiDAR sensors provide accurate depth and distance measurements and are less sensitive to lighting conditions. Despite their accuracy, LiDAR
+systems increase payload weight and computational requirements and may struggle with reflective or transparent surfaces.
+
+### Noise and Drift Accumulation
+Sensor noise introduces random fluctuations in measurements, while drift refers to systematic error accumulation over time. 
+In GPS-denied environments, drift is particularly problematic because there is no external reference to correct long-term errors. 
+Sensor fusion techniques mitigate these effects by combining fast inertial predictions with corrective observations from vision or depth sensors.
+
+### Summary of Sensor Characteristics and Limitations
+
+| Sensor | Information Provided | Strengths | Limitations | Typical Errors |
+|------|----------------------|----------|-------------|----------------|
+| IMU | Acceleration, angular velocity | High update rate, independent of environment | Error accumulates over time | Noise, bias, drift |
+| Camera | Visual features, relative motion | Rich environmental information | Sensitive to lighting and texture | Motion blur, feature loss |
+| LiDAR | Depth and distance measurements | Accurate range sensing, lighting independent | High cost and computational load | Measurement noise, reflection errors |
+
+The complementary strengths and weaknesses of these sensors motivate the use of sensor fusion techniques to achieve reliable state estimation
+in GPS-denied environments.
+
+## Validation Strategy
+
+In GPS-denied navigation systems, reliable validation of the state estimation pipeline is essential due to the absence of external
+positioning references. In this case study, validation is performed using a combination of simulation-based evaluation and sensor degradation
+analysis to assess accuracy, stability, and robustness.
+
+### Simulation-Based Validation
+A simulation-based approach is used to evaluate the performance of the state estimation pipeline under controlled conditions. The simulated
+environment provides access to ground-truth position and orientation data, which allows the estimated state to be compared against known
+reference trajectories. Virtual IMU, camera, and LiDAR sensors are configured with realistic noise and bias characteristics to reflect
+real-world operating conditions.
+
+### Evaluation Metrics
+The performance of the estimation pipeline is evaluated using metrics such as position error, orientation error, and drift accumulation over
+time. These metrics help assess the accuracy and stability of the estimated state.
+
+### Comparative Analysis
+Different sensor configurations are compared to evaluate the benefit of sensor fusion. An IMU-only configuration exhibits rapid drift, while the
+addition of vision-based measurements significantly reduces error. The integration of LiDAR further improves robustness and stability in complex
+environments.
+
+### Sensor Degradation Analysis
+To evaluate robustness, the state estimation pipeline is further analyzed under sensor degradation scenarios. These scenarios include increased
+IMU noise, reduced camera frame rates, and temporary loss of visual measurements. The objective is to observe how the system behaves when
+sensor data quality deteriorates.
+
+A robust sensor fusion-based estimation system is expected to degrade gracefully rather than fail completely. The continued operation of the
+pipeline under degraded sensor conditions demonstrates the effectiveness of multi-sensor fusion in handling real-world uncertainties and sensor
+imperfections.
+
+Together, these validation strategies demonstrate that the proposed state estimation pipeline is both accurate and resilient, making it
+suitable for autonomous navigation in GPS-denied environments.
+
+### Real-World Alignment
+
+The proposed state estimation and sensor fusion approach is consistent with navigation strategies used in real-world autonomous systems
+operating in GPS-denied environments. A notable example is the *Ingenuity Mars Helicopter*, which relies on inertial sensing and
+vision-based navigation to estimate its state in the absence of GPS. Similar visual-inertial fusion techniques are also employed in indoor
+inspection and search-and-rescue drones, where external positioning infrastructure is unavailable or unreliable.
+
+With a reliable state estimation pipeline established, the next stage focuses on how the drone perceives and maps its surrounding environment
+to support safe navigation.
+
