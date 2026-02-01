@@ -13,4 +13,4 @@ disaster zones, and planetary exploration missions.
 - Propose autonomous navigation strategies
 
 ## Status
-🟢 In Progress
+🟢 Stage 1 Completed – Sensor Suite & State Estimation
